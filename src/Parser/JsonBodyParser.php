@@ -14,9 +14,16 @@ class JsonBodyParser implements BodyParser
 
     }
 
-    public function parseResponseBody(Body $body) : stdClass|array
+    public function parseBody(Body $body) : stdClass|array
     {
-        $parsed = json_decode($body->getContents(), $this->decodeToArray);
+        $content = $body->getContents();
+
+        if(empty($content)) {
+            $msg = 'Body content is empty';
+            throw new BodyParsingException($msg);
+        }
+
+        $parsed = json_decode($content, $this->decodeToArray);
 
         if($parsed === null) {
             $msg = json_last_error_msg();

@@ -11,5 +11,5 @@ interface BodyParser
      * @throws BodyParsingException
      *
      */
-     function parseResponseBody(Body $body);
+     function parseBody(Body $body);
 }

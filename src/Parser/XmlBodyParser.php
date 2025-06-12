@@ -9,7 +9,7 @@ use PainlessPHP\Http\Message\Body;
 
 class XmlBodyParser implements BodyParser
 {
-    public function parseResponseBody(Body $body) : array
+    public function parseBody(Body $body) : array
     {
         // Enable user error handling to catch exceptions and display error messages
         $previousSetting = libxml_use_internal_errors(true);

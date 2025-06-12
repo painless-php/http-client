@@ -17,6 +17,9 @@ class ParseResponseBody implements ResponseMiddleware
         'application/xml'  => XmlBodyParser::class
     ];
 
+    /**
+     * @var array<BodyParser>
+     */
     protected array $parsers;
 
     /**
@@ -64,7 +67,7 @@ class ParseResponseBody implements ResponseMiddleware
         $body = $response->getBody();
 
         try {
-            $body = new ParsedBody($body, $parser->parseResponseBody($body));
+            $body = new ParsedBody($body, $parser->parseBody($body));
             return $response->withBody($body);
         }
         catch(ResponseParsingException $e) {

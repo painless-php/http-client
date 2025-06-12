@@ -10,7 +10,7 @@ use PainlessPHP\Http\Message\Query;
 
 class FormBodyParser implements BodyParser
 {
-    public function parseResponseBody(Body $body) : array
+    public function parseBody(Body $body) : array
     {
         $content = $body->getContents();
 
