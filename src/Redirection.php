@@ -9,14 +9,34 @@ use ValueError;
 
 class Redirection
 {
-    private $status;
+    private Uri $source;
+    private Uri $destination;
+    private Status $status;
 
     public function __construct(
-        private Uri|string $source,
-        private Uri|string $destination,
+        Uri|string $source,
+        Uri|string $destination,
         Status|int $status
     ) {
         $this->setStatus($status);
+        $this->setSource($source);
+        $this->setDestination($destination);
+    }
+
+    private function setSource(Uri|string $source)
+    {
+        if(is_string($source)) {
+            $source = new Uri($source);
+        }
+        $this->source = $source;
+    }
+
+    private function setDestination(Uri|string $destination)
+    {
+        if(is_string($destination)) {
+            $destination = new Uri($destination);
+        }
+        $this->destination = $destination;
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace PainlessPHP\Http\Client;
 
+use PainlessPHP\Http\Client\Exception\ResponseException;
 use PainlessPHP\Http\Message\HeaderCollection;
 use PainlessPHP\Http\Message\Response;
 use PainlessPHP\Http\Message\Status;
@@ -54,7 +55,7 @@ class ClientResponse extends Response
     }
 
     /**
-     * @return array $exceptions returns an array containing ResponseExceptions
+     * @return array<ResponseException>
      *
      */
     public function getExceptions() : array
@@ -86,7 +87,7 @@ class ClientResponse extends Response
      * Create a new response instance with a given redirection
      *
      */
-    public function withRedirection(Redirection $redirection)
+    public function withRedirection(Redirection $redirection) : self
     {
         $instance = $this->clone();
         $instance->redirections[] = $redirection;

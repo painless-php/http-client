@@ -49,4 +49,9 @@ class ResponseMiddlewareStack
     {
         return new self([...$this->middlewares, ...$middlewares]);
     }
+
+    public function toArray() : array
+    {
+        return $this->middlewares;
+    }
 }

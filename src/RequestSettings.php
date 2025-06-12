@@ -9,11 +9,11 @@ class RequestSettings
 {
     use CreatableFromArray;
 
-    private int $timeout;
+    private int|float $timeout;
     private int $maxRedirections;
 
     public function __construct(
-        int $timeout = 10,
+        int|float $timeout = 10,
         int $maxRedirections = 3
     ) {
         $this->setTimeout($timeout);
@@ -24,10 +24,10 @@ class RequestSettings
      * Set timeout
      *
      */
-    private function setTimeout(float $timeout)
+    private function setTimeout(int|float $timeout)
     {
         if($timeout < 0) {
-            $msg = "timeout can't be negative";
+            $msg = "Request timeout can't be negative";
             throw new ValueError($msg);
         }
 
@@ -41,14 +41,14 @@ class RequestSettings
     private function setMaxRedirections(int $max)
     {
         if($max < 0) {
-            $msg = "max_redirections can't be negative";
+            $msg = "Request max_redirections can't be negative";
             throw new ValueError($msg);
         }
 
         $this->maxRedirections = $max;
     }
 
-    public function getTimeout() : int
+    public function getTimeout() : int|float
     {
         return $this->timeout;
     }

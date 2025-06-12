@@ -5,7 +5,7 @@ namespace PainlessPHP\Http\Client\Concern;
 use PainlessPHP\Http\Client\ClientRequest;
 use PainlessPHP\Http\Client\ClientResponse;
 use PainlessPHP\Http\Client\Contract\ClientRequestProcessor;
-use Wor\Skeleton\Middleware\ClosureClientRequestProcessor;
+use PainlessPHP\Http\Client\Internal\ClosureClientRequestProcessor;
 
 trait IntoClientRequestProcessor
 {

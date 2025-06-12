@@ -25,7 +25,7 @@ class ClientRequest extends Request
      * Middlewares applied to response for this request
      *
      */
-    protected ResponseMiddlewareStack $responseMiddlewares;
+    protected ResponseMiddlewareStack $responseMiddlewareStack;
 
     /**
      * Request settings
@@ -43,11 +43,11 @@ class ClientRequest extends Request
         mixed $body = null,
         HeaderCollection|array $headers = [],
         RequestSettings|array $settings = [],
-        ResponseMiddlewareStack|array $responseMiddlewares = []
+        ResponseMiddlewareStack|array $responseMiddlewareStack = []
     ) {
         parent::__construct($method, $uri, $body, $headers);
         $this->setSettings($settings);
-        $this->setResponseMiddlewares($responseMiddlewares);
+        $this->setResponseMiddlewareStack($responseMiddlewareStack);
     }
 
     private function setSettings(RequestSettings|array $settings)
@@ -58,12 +58,12 @@ class ClientRequest extends Request
         $this->settings = $settings;
     }
 
-    private function setResponseMiddlewares(ResponseMiddlewareStack|array $middlewares)
+    private function setResponseMiddlewareStack(ResponseMiddlewareStack|array $stack)
     {
-        if(is_array($middlewares)) {
-            $middlewares = ResponseMiddlewareStack::createFromArray($middlewares);
+        if(is_array($stack)) {
+            $stack = ResponseMiddlewareStack::createFromArray($stack);
         }
-        $this->responseMiddlewares = $middlewares;
+        $this->responseMiddlewareStack = $stack;
     }
 
     /**
@@ -90,9 +90,9 @@ class ClientRequest extends Request
      * Get the response middlewares
      *
      */
-    public function getResponseMiddlewares() : ResponseMiddlewareStack
+    public function getResponseMiddlewareStack() : ResponseMiddlewareStack
     {
-        return $this->responseMiddlewares;
+        return $this->responseMiddlewareStack;
     }
 
     /**
@@ -102,7 +102,8 @@ class ClientRequest extends Request
     public function withResponseMiddleware(ResponseMiddleware $middleware) : self
     {
         $instance = $this->clone();
-        $instance->responseMiddlewares = $this->responseMiddlewares->withAdditionalMiddleware($middleware);
+        $instance->responseMiddlewareStack = $this->responseMiddlewareStack
+            ->withAdditionalMiddleware($middleware);
         return $instance;
     }
 }

@@ -16,8 +16,13 @@ Http messaging related functionality, implementing psr-18.
 
 #### Exceptions
 
-- MessageException
+- **MessageException** - psr-18 compatible exceptions
     - ClientException
     - CommunicationException
         - RequestException
         - NetworkException
+
+- **ResponseException** - response processing exceptions that can be created by middlewares
+    - ResponseParsingException
+    - ResponseContentException
+    - UnexpectedStatusCodeException
