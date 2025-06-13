@@ -19,6 +19,7 @@ use PainlessPHP\Http\Client\Exception\MessageException;
 use PainlessPHP\Http\Client\Exception\NetworkException;
 use PainlessPHP\Http\Client\Redirection;
 use PainlessPHP\Http\Client\RequestResolution;
+use PainlessPHP\Http\Client\RequestResolutionCollection;
 use PainlessPHP\Http\Message\Uri;
 use Psr\Http\Message\ResponseInterface;
 
@@ -79,10 +80,11 @@ class Guzzle implements ClientAdapter
         ?callable $beforeRequest = null,
         ?callable $afterResponse = null,
         ?int $concurrency = null
-    ): array
+    ): RequestResolutionCollection
     {
         // Transform requests to promises
         $promises = $this->createAsyncRequests($requests, $beforeRequest);
+        $resolutions = [];
 
         $pool = new Pool($this->guzzle, $promises, [
             'concurrency' => $concurrency ?? count($promises),
@@ -90,19 +92,19 @@ class Guzzle implements ClientAdapter
                 $request = $requests[$index];
                 $response = $this->createResponse($request, $response);
                 $response = $afterResponse === null ? $response : $afterResponse($response);
-                $resolutions->push(new RequestResolution($request, $response));
+                $resolutions[] = new RequestResolution($request, $response);
             },
             'rejected' => function($exception, $index) use ($requests, &$resolutions) {
                 $request = $requests[$index];
                 $exception = $this->createException($request, $exception);
-                $resolutions->push(new RequestResolution($request, $exception));
+                $resolutions[] = new RequestResolution($request, $exception);
             }
         ]);
 
         // Wait for requests to resolve
         $pool->promise()->wait();
 
-        return $resolutions;
+        return new RequestResolutionCollection($resolutions);
     }
 
     private function createAsyncRequests(array|Generator $requests, callable $beforeRequest) : array|Generator

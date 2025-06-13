@@ -110,14 +110,13 @@ class Client implements ClientInterface, RequestFactoryInterface
         return $response;
     }
 
-    public function sendRequests(array|Generator $requests) : Generator
+    public function sendRequests(array|Generator $requests) : RequestResolutionCollection
     {
-        $response = $this->adapter->sendRequests(
+        return $this->adapter->sendRequests(
             requests: $requests,
             beforeRequest: fn(ClientRequest $request) => $this->beforeRequest($request),
             afterResponse: fn(ClientResponse $response) => $this->afterResponse($response)
         );
-        return $responses;
     }
 
     private function beforeRequest(ClientRequest $request) : ClientRequest

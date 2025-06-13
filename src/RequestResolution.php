@@ -21,4 +21,9 @@ class RequestResolution
     {
         return $this->resolution;
     }
+
+    public function failed() : bool
+    {
+        return $this->resolution instanceof MessageException;
+    }
 }

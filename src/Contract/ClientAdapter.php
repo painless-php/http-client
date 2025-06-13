@@ -7,6 +7,7 @@ use PainlessPHP\Http\Client\ClientResponse;
 use PainlessPHP\Http\Client\Exception\ClientException;
 use PainlessPHP\Http\Client\Exception\NetworkException;
 use PainlessPHP\Http\Client\Exception\RequestException;
+use PainlessPHP\Http\Client\RequestResolutionCollection;
 
 interface ClientAdapter
 {
@@ -27,12 +28,13 @@ interface ClientAdapter
      * @param callable(ClientRequest) : ClientRequest $beforeRequest
      * @param callable(ClientResponse) : ClientResponse $afterResponse
      *
-     * @return array<ClientResponse>
+     * @return RequestResolutionCollection
      *
      */
     public function sendRequests(
         array $requests,
         ?callable $beforeRequest = null,
-        ?callable $afterResponse = null
-    ) : array;
+        ?callable $afterResponse = null,
+        ?int $concurrency = null
+    ) : RequestResolutionCollection;
 }
