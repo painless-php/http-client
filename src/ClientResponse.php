@@ -21,12 +21,18 @@ class ClientResponse extends Response
         private ClientRequest $request,
         Status|int $status = 200,
         mixed $body = null,
-        HeaderCollection|array $headers = []
+        HeaderCollection|array $headers = [],
+        array $redirections = []
     ) {
         parent::__construct($status, $body, $headers);
         $this->request = $request;
         $this->exceptions = [];
-        $this->redirections = [];
+        $this->setRedirections(...$redirections);
+    }
+
+    private function setRedirections(Redirection ...$redirections)
+    {
+        $this->redirections = $redirections;
     }
 
     /**
@@ -130,5 +136,20 @@ class ClientResponse extends Response
     public function getRequest() : ClientRequest
     {
         return $this->request;
+    }
+
+    /**
+     * Throw a response exception if there are any exceptions
+     * attached to this response. Does nothing if there are no exceptions
+     *
+     */
+    public function throwExceptions() : void
+    {
+        if(! $this->hasExceptions()) {
+            return;
+        }
+        $messages = implode(PHP_EOL, $this->getExceptionMessages());
+        $msg = 'Response has exceptions: ' . PHP_EOL . $messages;
+        throw new ResponseException($msg);
     }
 }
