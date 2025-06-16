@@ -10,20 +10,23 @@ use GuzzleHttp\Exception\TooManyRedirectsException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Pool;
-use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
+use PainlessPHP\Http\Client\ClientMiddlewareStack;
 use PainlessPHP\Http\Client\ClientRequest;
 use PainlessPHP\Http\Client\ClientResponse;
 use PainlessPHP\Http\Client\Contract\ClientAdapter;
 use PainlessPHP\Http\Client\Exception\ClientException;
 use PainlessPHP\Http\Client\Exception\MessageException;
 use PainlessPHP\Http\Client\Exception\NetworkException;
+use PainlessPHP\Http\Client\Internal\ClosureClientRequestProcessor;
 use PainlessPHP\Http\Client\Redirection;
 use PainlessPHP\Http\Client\RequestResolution;
 use PainlessPHP\Http\Client\RequestResolutionCollection;
 use PainlessPHP\Http\Message\Uri;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class Guzzle implements ClientAdapter
+class GuzzleClientAdapter implements ClientAdapter
 {
     private const array guzzleHeaders = [
         'X-Guzzle-Redirect-History',
@@ -49,9 +52,10 @@ class Guzzle implements ClientAdapter
      * cannot be serialized
      *
      */
-    public function __sleep()
+    public function __sleep() : array
     {
         $this->guzzle = null;
+        return [];
     }
 
     /**
@@ -77,16 +81,21 @@ class Guzzle implements ClientAdapter
 
     public function sendRequests(
         array $requests,
+        ClientMiddlewareStack $middlewares,
         ?callable $beforeRequest = null,
         ?callable $afterResponse = null,
-        ?int $concurrency = null
+        ?int $concurrency = null,
     ): RequestResolutionCollection
     {
+        $stack = HandlerStack::create(new CurlMultiHandler);
+        $stack->push($this->createMiddleware($middlewares));
+        $client = new Client(['handler' => $stack]);
+
         // Transform requests to promises
         $promises = $this->createAsyncRequests($requests, $beforeRequest);
         $resolutions = [];
 
-        $pool = new Pool($this->guzzle, $promises, [
+        $pool = new Pool($client, $promises, [
             'concurrency' => $concurrency ?? count($promises),
             'fulfilled' => function($response, $index) use ($requests, &$resolutions, $afterResponse) {
                 $request = $requests[$index];
@@ -107,7 +116,26 @@ class Guzzle implements ClientAdapter
         return new RequestResolutionCollection($resolutions);
     }
 
-    private function createAsyncRequests(array|Generator $requests, callable $beforeRequest) : array|Generator
+    private function createMiddleware(ClientMiddlewareStack $middlewares)
+    {
+        return function(callable $handler) {
+            return function(RequestInterface $request, array $options) use ($handler) {
+                dd('DIE');
+                return $handler($request, $options);
+            };
+        };
+
+        return function(callable $handler) use($middlewares) {
+            return function(RequestInterface $request, array $options) use($handler, $middlewares) {
+                $closure = new ClosureClientRequestProcessor(function(ClientRequest $request) use($handler, $options) {
+                    return $this->createResponse($request, $handler($request, $options));
+                });
+                return $middlewares->apply($request, $closure);
+            };
+        };
+    }
+
+    private function createAsyncRequests(array|Generator $requests, callable $beforeRequest) : array|callable
     {
         if(is_array($requests)) {
             return array_map(
@@ -122,10 +150,10 @@ class Guzzle implements ClientAdapter
         };
     }
 
-    private function createAsyncRequest(ClientRequest $request, ?callable $beforeRequest) : Promise
+    private function createAsyncRequest(ClientRequest $request, ?callable $beforeRequest)
     {
         $request = $beforeRequest === null ? $request : $beforeRequest($request);
-        return $this->guzzle->sendAsync($request,$this->createRequestOptions($request));
+        return fn() => $this->guzzle->sendAsync($request, $this->createRequestOptions($request));
     }
 
     private function createResponse(ClientRequest $request, ResponseInterface $response) : ClientResponse
@@ -155,7 +183,7 @@ class Guzzle implements ClientAdapter
         $codes = $response->getHeader('X-Guzzle-Redirect-Status-History');
         $redirections = [];
         foreach($uris as $index => $uri) {
-            $redirections[] = new Redirection($source, $uri, $codes[$index]);
+            $redirections[] = new Redirection($source, $uri, intval($codes[$index]));
         }
         return $redirections;
     }

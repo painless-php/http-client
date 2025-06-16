@@ -2,6 +2,7 @@
 
 namespace PainlessPHP\Http\Client\Contract;
 
+use PainlessPHP\Http\Client\ClientMiddlewareStack;
 use PainlessPHP\Http\Client\ClientRequest;
 use PainlessPHP\Http\Client\ClientResponse;
 use PainlessPHP\Http\Client\Exception\ClientException;
@@ -33,6 +34,7 @@ interface ClientAdapter
      */
     public function sendRequests(
         array $requests,
+        ClientMiddlewareStack $middlewares,
         ?callable $beforeRequest = null,
         ?callable $afterResponse = null,
         ?int $concurrency = null

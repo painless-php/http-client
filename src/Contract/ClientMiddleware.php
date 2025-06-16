@@ -8,4 +8,6 @@ use PainlessPHP\Http\Client\ClientResponse;
 interface ClientMiddleware
 {
     public function apply(ClientRequest $request, ClientRequestProcessor $next) : ClientResponse;
+
+    public function toClientRequestProcessor(ClientRequestProcessor $last) : ClientRequestProcessor;
 }

@@ -7,8 +7,9 @@
         "php": ">=8.3",
         "psr/http-message": "^2.0",
         "psr/http-client": "^1.0",
-        "painless-php/http-message": "dev-master",
         "psr/http-factory": "^1.1",
+        "psr/log": "^3.0",
+        "painless-php/http-message": "dev-master",
         "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
@@ -16,7 +17,8 @@
         "spatie/phpunit-watcher": "^1.24",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "symfony/var-dumper": "^7.3"
+        "symfony/var-dumper": "^7.3",
+        "mockery/mockery": "*"
     },
     "autoload": {
         "psr-4": {

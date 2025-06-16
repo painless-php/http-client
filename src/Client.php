@@ -4,9 +4,11 @@ namespace PainlessPHP\Http\Client;
 
 use Generator;
 use PainlessPHP\Http\Client\Contract\ClientAdapter;
+use PainlessPHP\Http\Client\Exception\MessageException;
+use PainlessPHP\Http\Client\Exception\ResponseException;
+use PainlessPHP\Http\Client\Internal\ClosureClientRequestProcessor;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 
 /**
@@ -19,17 +21,20 @@ class Client implements ClientInterface, RequestFactoryInterface
     private RequestSettings $settings;
     private RequestMiddlewareStack $requestMiddlewares;
     private ResponseMiddlewareStack $responseMiddlewares;
+    private ClientMiddlewareStack $middlewares;
 
     public function __construct(
         ClientAdapter $adapter,
         RequestSettings|array $settings = [],
         RequestMiddlewareStack|array $requestMiddlewares = [],
         ResponseMiddlewareStack|array $responseMiddlewares = [],
+        ClientMiddlewareStack|array $middlewares = []
     ) {
         $this->adapter = $adapter;
         $this->setSettings($settings);
         $this->setRequestMiddlewares($requestMiddlewares);
         $this->setResponseMiddlewares($responseMiddlewares);
+        $this->setMiddlewares($middlewares);
     }
 
     private function setSettings(RequestSettings|array $settings)
@@ -51,20 +56,33 @@ class Client implements ClientInterface, RequestFactoryInterface
     private function setResponseMiddlewares(ResponseMiddlewareStack|array $responseMiddlewares)
     {
         if(is_array($responseMiddlewares)) {
-            $responseMiddlewares = RequestMiddlewareStack::createFromArray($responseMiddlewares);
+            $responseMiddlewares = ResponseMiddlewareStack::createFromArray($responseMiddlewares);
         }
         $this->responseMiddlewares = $responseMiddlewares;
+    }
+
+    private function setMiddlewares(ClientMiddlewareStack|array $middlewares)
+    {
+        if(is_array($middlewares)) {
+            $middlewares = ClientMiddlewareStack::createFromArray($middlewares);
+        }
+        $this->middlewares = $middlewares;
     }
 
     /**
      * Create a request, PSR-17
      *
-     * @return RequestInterface (ClientRequest)
+     * @return ClientRequest (RequestInterface)
      *
      */
     public function createRequest(string $method, $uri, $body = null, $headers = null) : ClientRequest
     {
-        return new ClientRequest($method, $uri, $body, $headers);
+        return new ClientRequest(
+            method: $method,
+            uri: $uri,
+            body: $body,
+            headers: $headers ?? []
+        );
     }
 
     /**
@@ -82,13 +100,10 @@ class Client implements ClientInterface, RequestFactoryInterface
      * Send a request, PSR-18
      *
      * @throws MessageException
-     *
-     * @param RequestInterface (ClientRequest) $request
-     *
-     * @return ResponseInterface (ClientResponse) $response
+     * @throws ResponseException Only when @$throwResponseExceptions === true, not part of the psr spec
      *
      */
-    public function sendRequest(RequestInterface $request) : ClientResponse
+    public function sendRequest(RequestInterface $request, bool $throwResponseExceptions = false) : ClientResponse
     {
         /* Convert request interface into ClientRequest */
         if(! ($request instanceof ClientRequest)) {
@@ -100,12 +115,22 @@ class Client implements ClientInterface, RequestFactoryInterface
             );
         }
 
-        $request = $this->beforeRequest($request);
+        // $request = $this->beforeRequest($request);
 
         // Send request with the adapter
-        $response = $this->adapter->sendRequest($request);
 
-        $request = $this->afterResponse($response);
+        $closure = new ClosureClientRequestProcessor(function(ClientRequest $request) : ClientResponse {
+            return $this->adapter->sendRequest($request);
+        });
+
+        $response = $this->middlewares->apply($request, $closure);
+        // $response = $this->adapter->sendRequest($request);
+
+        // $response = $this->afterResponse($response);
+
+        if($throwResponseExceptions) {
+            $response->throwExceptions();
+        }
 
         return $response;
     }
@@ -115,7 +140,8 @@ class Client implements ClientInterface, RequestFactoryInterface
         return $this->adapter->sendRequests(
             requests: $requests,
             beforeRequest: fn(ClientRequest $request) => $this->beforeRequest($request),
-            afterResponse: fn(ClientResponse $response) => $this->afterResponse($response)
+            afterResponse: fn(ClientResponse $response) => $this->afterResponse($response),
+            middlewares: $this->middlewares
         );
     }
 

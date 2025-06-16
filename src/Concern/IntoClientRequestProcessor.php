@@ -19,7 +19,7 @@ trait IntoClientRequestProcessor
      */
     public function toClientRequestProcessor(ClientRequestProcessor $last) : ClientRequestProcessor
     {
-        return new ClosureClientRequestProcessor(function(ClientRequest $request) use($last) {
+        return new ClosureClientRequestProcessor(function(ClientRequest $request) use($last) : ClientResponse {
             return $this->apply($request, $last);
         });
     }

@@ -25,13 +25,19 @@ class ClientRequest extends Request
      * Middlewares applied to response for this request
      *
      */
-    protected ResponseMiddlewareStack $responseMiddlewareStack;
+    private ResponseMiddlewareStack $responseMiddlewareStack;
 
     /**
      * Request settings
      *
      */
-    protected RequestSettings $settings;
+    private RequestSettings $settings;
+
+    /**
+     * Attributes provided a method for storing arbitrary data in a request
+     *
+     */
+    private array $attributes;
 
     /**
      * Create a new request instance
@@ -43,11 +49,13 @@ class ClientRequest extends Request
         mixed $body = null,
         HeaderCollection|array $headers = [],
         RequestSettings|array $settings = [],
-        ResponseMiddlewareStack|array $responseMiddlewareStack = []
+        ResponseMiddlewareStack|array $responseMiddlewareStack = [],
+        array $attributes = []
     ) {
         parent::__construct($method, $uri, $body, $headers);
         $this->setSettings($settings);
         $this->setResponseMiddlewareStack($responseMiddlewareStack);
+        $this->attributes = $attributes;
     }
 
     private function setSettings(RequestSettings|array $settings)
@@ -104,6 +112,35 @@ class ClientRequest extends Request
         $instance = $this->clone();
         $instance->responseMiddlewareStack = $this->responseMiddlewareStack
             ->withAdditionalMiddleware($middleware);
+        return $instance;
+    }
+
+    public function hasAttribute(string $name) : bool
+    {
+        return array_key_exists($name, $this->attributes);
+    }
+
+    public function getAttribute(string $name, mixed $default = null) : mixed
+    {
+        return $this->attributes[$name] ?? $default;
+    }
+
+    public function getAttributes() : array
+    {
+        return $this->attributes;
+    }
+
+    public function withAttributes(array $attributes) : static
+    {
+        $instance = $this->clone();
+        $instance->attributes = $attributes;
+        return $instance;
+    }
+
+    public function withAdditionalAttributes(array $additional) : static
+    {
+        $instance = $this->clone();
+        $instance->attributes = array_merge($this->attributes, $additional);
         return $instance;
     }
 }
