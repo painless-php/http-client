@@ -31,7 +31,6 @@ class LogTraffic implements ClientMiddleware
 
     public function apply(ClientRequest $request, ClientRequestProcessor $next): ClientResponse
     {
-        dd('apply');
         $this->logRequest($request);
 
         try {

@@ -30,6 +30,6 @@ class ClientTest extends TestCase
             $client->createRequest('GET', 'https://google.com?param=bar'),
         ]);
 
-        // dd($responses->hasExceptions());
+        dd($responses->hasExceptions());
     }
 }

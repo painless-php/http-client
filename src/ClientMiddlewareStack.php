@@ -2,8 +2,10 @@
 
 namespace PainlessPHP\Http\Client;
 
+use GuzzleHttp\Promise\Promise;
 use PainlessPHP\Http\Client\Contract\ClientMiddleware;
 use PainlessPHP\Http\Client\Contract\ClientRequestProcessor;
+use PainlessPHP\Http\Client\Internal\ClosureClientRequestProcessor;
 use PainlessPHP\Http\Message\Concern\CreatableFromArray;
 
 class ClientMiddlewareStack
