@@ -25,4 +25,9 @@ class RequestResolutionCollection
         }
         return false;
     }
+
+    public function toArray() : array
+    {
+        return $this->resolutions;
+    }
 }

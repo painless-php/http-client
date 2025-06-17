@@ -10,21 +10,16 @@ use GuzzleHttp\Exception\TooManyRedirectsException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Pool;
-use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Promise\PromiseInterface;
-use PainlessPHP\Http\Client\ClientMiddlewareStack;
 use PainlessPHP\Http\Client\ClientRequest;
 use PainlessPHP\Http\Client\ClientResponse;
 use PainlessPHP\Http\Client\Contract\ClientAdapter;
 use PainlessPHP\Http\Client\Exception\ClientException;
 use PainlessPHP\Http\Client\Exception\MessageException;
 use PainlessPHP\Http\Client\Exception\NetworkException;
-use PainlessPHP\Http\Client\Internal\ClosureClientRequestProcessor;
 use PainlessPHP\Http\Client\Redirection;
 use PainlessPHP\Http\Client\RequestResolution;
 use PainlessPHP\Http\Client\RequestResolutionCollection;
 use PainlessPHP\Http\Message\Uri;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class GuzzleClientAdapter implements ClientAdapter
@@ -43,14 +38,9 @@ class GuzzleClientAdapter implements ClientAdapter
 
     private function createSyncClient() : Client
     {
-        return new Client;
-    }
-
-    private function createAsyncClient(ClientMiddlewareStack $middlewares) : Client
-    {
-        $stack = HandlerStack::create(new CurlMultiHandler);
-        $stack->push($this->createAsyncMiddleware($middlewares));
-        return new Client(['handler' => $stack]);
+        return new Client([
+            'handler' => HandlerStack::create(new CurlMultiHandler)
+        ]);
     }
 
     /**
@@ -87,19 +77,16 @@ class GuzzleClientAdapter implements ClientAdapter
 
     public function sendRequests(
         array $requests,
-        ClientMiddlewareStack $middlewares,
         ?callable $beforeRequest = null,
         ?callable $afterResponse = null,
         ?int $concurrency = null,
     ): RequestResolutionCollection
     {
-        $client = $this->createAsyncClient($middlewares);
-
         // Transform requests to promises
-        $promises = $this->createAsyncRequests($client, $requests, $beforeRequest);
+        $promises = $this->createAsyncRequests($requests, $beforeRequest);
         $resolutions = [];
 
-        $pool = new Pool($client, $promises, [
+        $pool = new Pool($this->guzzle, $promises, [
             'concurrency' => $concurrency ?? count($promises),
             'fulfilled' => function($response, $index) use ($requests, &$resolutions, $afterResponse) {
                 $request = $requests[$index];
@@ -120,44 +107,25 @@ class GuzzleClientAdapter implements ClientAdapter
         return new RequestResolutionCollection($resolutions);
     }
 
-    private function createAsyncMiddleware(ClientMiddlewareStack $middlewares)
-    {
-        return function(callable $handler) use($middlewares) {
-            return function(RequestInterface $guzzleRequest, array $options) use($handler, $middlewares) {
-                /** @var PromiseInterface $promise  */
-                $promise = $handler($guzzleRequest, $options);
-
-                return $promise->then(function(ResponseInterface $guzzleResponse) use($options, $middlewares) {
-                    $request = $options['original'];
-                    return $middlewares->apply($request, new ClosureClientRequestProcessor(function() use($request, $guzzleResponse) {
-                        return $this->createResponse($request, $guzzleResponse);
-                    }));
-                });
-
-                return $promise;
-            };
-        };
-    }
-
-    private function createAsyncRequests(Client $client, array|Generator $requests, callable $beforeRequest) : array|callable
+    private function createAsyncRequests(array|Generator $requests, callable $beforeRequest) : array|callable
     {
         if(is_array($requests)) {
             return array_map(
-                fn(ClientRequest $request) => $this->createAsyncRequest($client, $request, $beforeRequest),
+                fn(ClientRequest $request) => $this->createAsyncRequest($request, $beforeRequest),
                 $requests
             );
         }
-        return function() use($client, $requests, $beforeRequest) {
+        return function() use($requests, $beforeRequest) {
             foreach($requests as $request) {
-                yield $this->createAsyncRequest($client, $request, $beforeRequest);
+                yield $this->createAsyncRequest($request, $beforeRequest);
             }
         };
     }
 
-    private function createAsyncRequest(Client $client, ClientRequest $request, ?callable $beforeRequest)
+    private function createAsyncRequest(ClientRequest $request, ?callable $beforeRequest)
     {
         $request = $beforeRequest === null ? $request : $beforeRequest($request);
-        return fn() => $client->sendAsync($request, $this->createRequestOptions($request));
+        return fn() => $this->guzzle->sendAsync($request, $this->createRequestOptions($request));
     }
 
     private function createResponse(ClientRequest $request, ResponseInterface $response) : ClientResponse
