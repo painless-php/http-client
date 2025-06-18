@@ -9,7 +9,6 @@ class Placeholder
         foreach ($placeholders as $name => $value) {
             $string = str_replace('{' . $name . '}', $value, $string);
         }
-        var_dump($string);
         return $string;
     }
 }

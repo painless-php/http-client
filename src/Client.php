@@ -125,8 +125,13 @@ class Client implements ClientInterface, RequestFactoryInterface
 
     private function beforeRequest(ClientRequest $request) : ClientRequest
     {
-        // Apply the client's settings to the request
-        $request = $request->withSettings($this->settings);
+        // Apply the client's settings to the request while preserving any explictly defined request settings
+        $request = $request->withSettings(
+            array_merge(
+                $this->settings,
+                $request->getSettings()->getExplicit()
+            )
+        );
 
         // Apply client request middlewares before sending the request
         $request = $this->requestMiddlewares->apply($request);
