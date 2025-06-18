@@ -3,6 +3,7 @@
 namespace PainlessPHP\Http\Client;
 
 use Generator;
+use PainlessPHP\Http\Client\Adapter\GuzzleClientAdapter;
 use PainlessPHP\Http\Client\Contract\ClientAdapter;
 use PainlessPHP\Http\Client\Exception\MessageException;
 use PainlessPHP\Http\Client\Exception\ResponseException;
@@ -22,12 +23,12 @@ class Client implements ClientInterface, RequestFactoryInterface
     private ResponseMiddlewareStack $responseMiddlewares;
 
     public function __construct(
-        ClientAdapter $adapter,
+        ?ClientAdapter $adapter = null,
         RequestSettings|array $settings = [],
         RequestMiddlewareStack|array $requestMiddlewares = [],
         ResponseMiddlewareStack|array $responseMiddlewares = []
     ) {
-        $this->adapter = $adapter;
+        $this->adapter = $adapter ?? new GuzzleClientAdapter;
         $this->setSettings($settings);
         $this->setRequestMiddlewares($requestMiddlewares);
         $this->setResponseMiddlewares($responseMiddlewares);

@@ -1,9 +1,10 @@
 <?php
 
-namespace PainlessPHP\Http\Client;
+namespace Test\Unit;
 
 use Mockery;
 use PainlessPHP\Http\Client\Adapter\GuzzleClientAdapter;
+use PainlessPHP\Http\Client\Client;
 use PainlessPHP\Http\Client\Middleware\Request\LogRequest;
 use PainlessPHP\Http\Client\Middleware\Response\LogResponse;
 use PHPUnit\Framework\TestCase;

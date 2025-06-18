@@ -8,11 +8,27 @@ Http messaging related functionality, implementing psr-18.
 
 ## Public API
 
+#### General
+
+- Client
+- ClientRequest
+- ClientResponse
+- ParsedBody
+- Redirection
+- RequestSettings
+- RequestResolution
+- RequestResolutionCollection
+
 #### Middleware
 
+- RequestMiddlewareStack
+- ResponseMiddlewareStack
 - **RequestMiddleware** - Manipulate request before it is sent
+    - LogRequest
 - **ResponseMiddleware** - Manipulate response before it is returned
-- **ClientMiddleware** - Take a request and produce a response
+    - LogResponse
+    - ParseResponseBody
+    - ExpectResponseCode
 
 #### Exceptions
 
@@ -26,3 +42,45 @@ Http messaging related functionality, implementing psr-18.
     - ResponseParsingException
     - ResponseContentException
     - UnexpectedStatusCodeException
+
+## Quickstart
+
+```php
+use PainlessPHP\Http\Client\Client;
+
+$client = new Client(
+    settings: [
+        'timeout' => 20,
+        'maxRedirections' => 5
+    ]
+);
+
+// Send a single request
+$response = $client->request(
+    method: 'GET',
+    uri: 'https://google.com',
+    body: 'foo',
+    headers: [
+        'content-type' => 'text/html'
+    ]
+);
+
+// Use psr-17 to create a request
+$request = $client->createRequest(
+    method: 'GET',
+    uri: 'https://google.com',
+    body: 'foo',
+    headers: [
+        'content-type' => 'text/html'
+    ]
+);
+
+// Send a psr-7 RequestInterface request
+$client->sendRequest($request);
+
+// Send multiple psr-7 RequestInterface requests
+$resolutions = $client->sendRequests([
+     $client->createRequest('GET', 'https://google.com?param=foo'),
+     $client->createRequest('GET', 'https://google.com?param=bar'),
+]);
+```
