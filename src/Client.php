@@ -124,7 +124,7 @@ class Client implements ClientInterface, RequestFactoryInterface
         // Apply the client's settings to the request while preserving any explictly defined request settings
         $request = $request->withSettings(
             array_merge(
-                $this->settings,
+                $this->settings->toArray(),
                 $request->getSettings()->getExplicit()
             )
         );
