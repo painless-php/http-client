@@ -96,12 +96,7 @@ class Client implements ClientInterface, RequestFactoryInterface
     {
         /* Convert request interface into ClientRequest */
         if(! ($request instanceof ClientRequest)) {
-            $request = new ClientRequest(
-                $request->getMethod(),
-                $request->getUri(),
-                $request->getBody(),
-                $request->getHeaders()
-            );
+            $request = ClientRequest::createFromRequest($request);
         }
 
         $request = $this->beforeRequest($request);

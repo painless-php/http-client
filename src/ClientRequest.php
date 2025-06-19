@@ -7,6 +7,7 @@ use PainlessPHP\Http\Message\HeaderCollection;
 use PainlessPHP\Http\Message\Method;
 use PainlessPHP\Http\Message\Request;
 use PainlessPHP\Http\Message\Uri;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -56,6 +57,16 @@ class ClientRequest extends Request
         $this->setSettings($settings);
         $this->setResponseMiddlewareStack($responseMiddlewareStack);
         $this->attributes = $attributes;
+    }
+
+    public static function createFromRequest(RequestInterface $request) : ClientRequest
+    {
+        return new ClientRequest(
+            $request->getMethod(),
+            $request->getUri(),
+            $request->getBody(),
+            $request->getHeaders()
+        );
     }
 
     private function setSettings(RequestSettings|array $settings)
