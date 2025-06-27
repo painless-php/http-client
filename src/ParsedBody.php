@@ -10,16 +10,16 @@ use PainlessPHP\Http\Message\Body;
  */
 class ParsedBody extends Body
 {
-    protected mixed $parsedContent;
-
-    public function __construct(Body $original, mixed $parsedContent)
+    public function __construct(
+        Body $original,
+        protected mixed $parsed
+    )
     {
         parent::__construct($original);
-        $this->parsedContent = $parsedContent;
     }
 
     public function getParsedContent() : mixed
     {
-        return $this->parsedContent;
+        return $this->parsed;
     }
 }
