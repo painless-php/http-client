@@ -27,7 +27,7 @@ class LogResponse implements ResponseMiddleware
     public function apply(ClientResponse $response): ClientResponse
     {
         $placeholders = [
-            ...self::resolvePlaceholders($response),
+            ...$this->resolvePlaceholders($response),
             ...$this->placeholders
         ];
 
@@ -39,7 +39,7 @@ class LogResponse implements ResponseMiddleware
         return $response;
     }
 
-    private static function resolvePlaceholders(ClientResponse $response) : array
+    protected function resolvePlaceholders(ClientResponse $response) : array
     {
         return [
             ...LogRequest::resolvePlaceholders($response->getRequest()),
@@ -49,7 +49,7 @@ class LogResponse implements ResponseMiddleware
         ];
     }
 
-    private function resolveLoggerContext(ClientResponse $context) : array
+    protected function resolveLoggerContext(ClientResponse $context) : array
     {
         $body = $context->getBody();
 

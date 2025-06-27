@@ -39,6 +39,11 @@ class LogRequest implements RequestMiddleware
         return $response;
     }
 
+    /**
+     * The reason this is public is because it's used by LogResponse.
+     * Could be moved to a dedicated class along the lines of "RequestLoggerPlaceholderResolver"
+     *
+     */
     public static function resolvePlaceholders(ClientRequest $request) : array
     {
         return [
@@ -51,7 +56,7 @@ class LogRequest implements RequestMiddleware
         ];
     }
 
-    private function resolveLoggerContext(ClientRequest $context) : array
+    protected function resolveLoggerContext(ClientRequest $context) : array
     {
         $body = $context->getBody();
 
