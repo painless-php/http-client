@@ -5,7 +5,6 @@ namespace PainlessPHP\Http\Client\Parser;
 use PainlessPHP\Http\Client\Contract\BodyParser;
 use PainlessPHP\Http\Client\Exception\BodyParsingException;
 use PainlessPHP\Http\Message\Body;
-use stdClass;
 
 class JsonBodyParser implements BodyParser
 {
@@ -14,7 +13,7 @@ class JsonBodyParser implements BodyParser
 
     }
 
-    public function parseBody(Body $body) : stdClass|array
+    public function parseBody(Body $body) : mixed
     {
         $content = $body->getContents();
 

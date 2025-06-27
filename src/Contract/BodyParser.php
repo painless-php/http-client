@@ -11,5 +11,5 @@ interface BodyParser
      * @throws BodyParsingException
      *
      */
-     function parseBody(Body $body);
+     function parseBody(Body $body) : mixed;
 }
