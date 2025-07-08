@@ -118,11 +118,18 @@ class ClientRequest extends Request
      * Create a new instance with the given middleware
      *
      */
-    public function withResponseMiddleware(ResponseMiddleware $middleware) : self
+    public function withAdditionalResponseMiddleware(ResponseMiddleware $middleware) : self
     {
         $instance = $this->clone();
         $instance->responseMiddlewareStack = $this->responseMiddlewareStack
             ->withAdditionalMiddleware($middleware);
+        return $instance;
+    }
+
+    public function withResponseMiddlewares(ResponseMiddlewareStack|array $middlewares) : self
+    {
+        $instance = $this->clone();
+        $instance->setResponseMiddlewareStack($middlewares);
         return $instance;
     }
 
