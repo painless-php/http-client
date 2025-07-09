@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c03aabcc341dd07a25577db79f342dd8",
+    "content-hash": "13144af352fd449294745906ea5d95e2",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -434,12 +434,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/painless-php/http-message.git",
-                "reference": "b853b6a4b5e9ffeafeb4eb0427295896939dc977"
+                "reference": "290430186e8051a2f9ec6474f72346164ab4d086"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/painless-php/http-message/zipball/b853b6a4b5e9ffeafeb4eb0427295896939dc977",
-                "reference": "b853b6a4b5e9ffeafeb4eb0427295896939dc977",
+                "url": "https://api.github.com/repos/painless-php/http-message/zipball/290430186e8051a2f9ec6474f72346164ab4d086",
+                "reference": "290430186e8051a2f9ec6474f72346164ab4d086",
                 "shasum": ""
             },
             "require": {
@@ -471,7 +471,7 @@
                 "issues": "https://github.com/painless-php/http-message/issues",
                 "source": "https://github.com/painless-php/http-message/tree/master"
             },
-            "time": "2025-06-12T18:03:49+00:00"
+            "time": "2025-07-09T16:55:59+00:00"
         },
         {
             "name": "psr/http-client",
